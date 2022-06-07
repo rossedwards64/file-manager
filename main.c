@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
+#include <ncurses.h>
 
 // function prototypes
 int list_all_files_in_dir(char* path);
@@ -13,12 +14,18 @@ int is_less_than(const void* a, const void* b);
 
 int main(int argc, char** argv)
 {
+	initscr();
+	cbreak();
+
 	if(argc == 1)
 		list_all_files_in_dir(".");
 
 	int counter = 1;
 	while(++counter <= argc)
 		list_all_files_in_dir(argv[counter - 1]);
+
+	getch();
+	endwin();
 
 	return EXIT_SUCCESS;
 }
@@ -43,7 +50,7 @@ size_t get_number_of_files(char* path)
 {
 	DIR* directory = opendir(path);
 	struct dirent* entry;
-	size_t n;
+	size_t n = 0;
 
 	while((entry = readdir(directory)))
 		if(strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0)
@@ -82,10 +89,11 @@ int populate_dir_list(char* path, char** dirlist)
 
 void print_list(char** dirlist, size_t file_no)
 {
-	qsort(dirlist, file_no, sizeof(char*), is_less_than);
+	qsort(dirlist, file_no, sizeof(char**), is_less_than);
 
 	for(size_t i = 0; i < file_no; i++)
-		printf("%s\n", dirlist[i]);
+		printw("%s\n", dirlist[i]);
+
 }
 
 int is_less_than(const void* a, const void* b)
